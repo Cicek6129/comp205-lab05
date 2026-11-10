@@ -1,0 +1,22 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.35.4   # the version the lab was tested with
+          cache: true
+      - name: Placeholder Firebase options (the real file is not in git)
+        run: cp ci/firebase_options.dart lib/firebase_options.dart
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test

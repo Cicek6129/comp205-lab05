@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Part 5: each user may read and write only their own notes:
+    //   match /users/{uid}/notes/{noteId} { ... }
+    // - read and delete: only if the request is signed in and request.auth.uid == uid
+    // - create and update: the same, AND request.resource.data.title is a string
+    //   with 1 to 100 characters.
+    // Everything else stays closed (no rule = denied).
+
+    // TODO(5)
+  }
+}

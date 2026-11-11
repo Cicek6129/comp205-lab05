@@ -15,7 +15,13 @@ class MessagingService {
   /// 4. await _messaging.subscribeToTopic(topic), then return token
   Future<String?> init() async {
     // TODO(6)
-    return null;
+    final settings = await _messaging.requestPermission();
+    if (settings.authorizationStatus == AuthorizationStatus.denied) {
+      return null;
+    }
+    final token = await _messaging.getToken();
+    await _messaging.subscribeToTopic(topic);
+    return token;
   }
 
   /// Calls [show] for every message that arrives while the app is open.
@@ -24,6 +30,10 @@ class MessagingService {
   /// ('New message' and '' if they are null).
   void listenInForeground(void Function(String title, String body) show) {
     // TODO(6)
+    FirebaseMessaging.onMessage.listen((message) {
+      final notification = message.notification;
+      show(notification?.title ?? 'New message', notification?.body ?? '');
+    });
   }
 }
 

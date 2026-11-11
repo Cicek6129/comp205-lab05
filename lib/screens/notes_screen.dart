@@ -35,12 +35,71 @@ class _NotesScreenState extends State<NotesScreen> {
     // TODO(4): showDialog<(String, String)>(context: context, builder: (_) => const AddNoteDialog())
     //          then addNote(widget.uid, result.$1, result.$2).
     // Tip: read the repository and ScaffoldMessenger BEFORE the first await.
+    final repo = context.read<NotesRepository>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final result = await showDialog<(String, String)>(
+      context: context,
+      builder: (_) => const AddNoteDialog(),
+    );
+    if (result == null) return; // the user pressed Cancel
+
+    try {
+      await repo.addNote(widget.uid, result.$1, result.$2);
+    } on ArgumentError {
+      messenger.showSnackBar(const SnackBar(content: Text('A title is required.')));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // TODO(4)
-    return const Scaffold(body: Center(child: Text('TODO: NotesScreen')));
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Notes'),
+        actions: [
+          IconButton(
+            tooltip: 'Sign out',
+            icon: const Icon(Icons.logout),
+            onPressed: () => context.read<AuthRepository>().signOut(),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Add note',
+        onPressed: _add,
+        child: const Icon(Icons.add),
+      ),
+      body: StreamBuilder<List<Note>>(
+        stream: _notes,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text('Could not load notes.'));
+          }
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final notes = snapshot.data!;
+          if (notes.isEmpty) {
+            return const Center(child: Text('No notes yet'));
+          }
+          return ListView.builder(
+            itemCount: notes.length,
+            itemBuilder: (context, index) {
+              final note = notes[index];
+              return Dismissible(
+                key: ValueKey(note.id),
+                onDismissed: (_) => context.read<NotesRepository>().deleteNote(widget.uid, note.id),
+                child: ListTile(
+                  title: Text(note.title),
+                  subtitle: Text(note.body),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 }
 

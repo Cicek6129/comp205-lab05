@@ -23,18 +23,26 @@ class AuthRepository {
   /// A FirebaseAuthException becomes AuthFailure(messageFor(e.code)).
   Future<void> signIn(String email, String password) async {
     // TODO(2)
-    throw UnimplementedError('signIn');
+    try {
+      await _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
+    } on FirebaseAuthException catch (e) {
+      throw AuthFailure(messageFor(e.code));
+    }
   }
 
   /// Same as signIn, with _auth.createUserWithEmailAndPassword.
   Future<void> signUp(String email, String password) async {
     // TODO(2)
-    throw UnimplementedError('signUp');
+    try {
+      await _auth.createUserWithEmailAndPassword(email: email.trim(), password: password);
+    } on FirebaseAuthException catch (e) {
+      throw AuthFailure(messageFor(e.code));
+    }
   }
 
   Future<void> signOut() async {
     // TODO(2)
-    throw UnimplementedError('signOut');
+    await _auth.signOut();
   }
 
   /// A friendly message for a FirebaseAuthException code:
@@ -47,6 +55,13 @@ class AuthRepository {
   ///   anything else            -> 'Sign-in failed. Please try again.'
   static String messageFor(String code) {
     // TODO(2) - a switch expression is the cleanest way
-    throw UnimplementedError('messageFor');
+    return switch (code) {
+      'invalid-email' => 'The email address is not valid.',
+      'weak-password' => 'The password must be at least 6 characters.',
+      'email-already-in-use' => 'An account already exists for this email.',
+      'invalid-credential' || 'wrong-password' || 'user-not-found' => 'Wrong email or password.',
+      'network-request-failed' => 'No connection. Check your network.',
+      _ => 'Sign-in failed. Please try again.',
+    };
   }
 }

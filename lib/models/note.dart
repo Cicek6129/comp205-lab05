@@ -16,7 +16,18 @@ class Note {
   /// - createdAt is a Timestamp (use .toDate()) - or missing/null: then createdAt is null.
   factory Note.fromFirestore(String id, Map<String, dynamic> data) {
     // TODO(1)
-    throw UnimplementedError('Note.fromFirestore');
+    final title = data['title'];
+    final body = data['body'];
+    if (title is! String || body is! String) {
+      throw FormatException('Note $id: title and body must be strings');
+    }
+    final createdAt = data['createdAt'];
+    return Note(
+      id: id,
+      title: title,
+      body: body,
+      createdAt: createdAt is Timestamp ? createdAt.toDate() : null,
+    );
   }
 
   /// The map written to Firestore: title, body and
@@ -24,9 +35,13 @@ class Note {
   /// The id is NOT a field - it is the document id.
   Map<String, dynamic> toFirestore() {
     // TODO(1)
-    throw UnimplementedError('Note.toFirestore');
+    return {
+      'title': title,
+      'body': body,
+      'createdAt': FieldValue.serverTimestamp(),
+    };
   }
 }
 
-// Remove this line when you are done:
+
 // ignore_for_file: unused_import

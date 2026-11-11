@@ -9,5 +9,18 @@ service cloud.firestore {
     // Everything else stays closed (no rule = denied).
 
     // TODO(5)
+    match /users/{uid}/notes/{noteId} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+      function validTitle() {
+        return request.resource.data.title is string
+            && request.resource.data.title.size() >= 1
+            && request.resource.data.title.size() <= 100;
+      }
+
+      allow read, delete: if isOwner();
+      allow create, update: if isOwner() && validTitle();
+    }
   }
 }
